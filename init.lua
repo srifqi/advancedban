@@ -12,7 +12,7 @@ function advancedban.ban(name)
 	minetest.log("action", name.." has been added to advancedban list.") -- print debug
 end
 
-minetest.register_chatcommand("advancedban", {
+minetest.register_chatcommand("aban", {
 	privs = {ban = true},
 	func = function(name, param)
 		advancedban.ban(param)
@@ -20,15 +20,21 @@ minetest.register_chatcommand("advancedban", {
 	end,
 })
 
-minetest.register_on_joinplayer(function(player)
+minetest.register_chatcommand("abankick", {
+	privs = {ban = true, kick = true},
+	func = function(name, param)
+		advancedban.ban(param)
+		minetest.kick_player("singleplayer", BAN_MESSAGE)
+		minetest.chat_send_player(name, param.." has been added to advancedban list and kicked.")
+	end,
+})
+
+minetest.register_on_prejoinplayer(function(name)
 	if file_exists(minetest.get_worldpath()..DIR_DELIM..FILE_NAME) == true then
 		local list = io.open(minetest.get_worldpath()..DIR_DELIM..FILE_NAME, "r")
 		for username in list:lines() do
-				local name = player:get_player_name()
 				if name == username then
-					minetest.after(0.1, function()
-						minetest.kick_player(name, BAN_MESSAGE) -- kick player
-					end)
+					return BAN_MESSAGE
 				end
 			end
 		list:close()

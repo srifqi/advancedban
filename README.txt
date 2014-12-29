@@ -6,12 +6,19 @@ This mod will ban ONLY username, not the ip address.
 
 	advancedban.ban(player_name)
 
-	or using chat commands:
+or using chat commands:
+(require privileges: ban)
 
-	/advancedban <player>
+	/aban <player>
 
 This will add player to advancedban list.
 This does NOT kick the player!
+
+Use this to add to list AND kick the player.
+(require privileges: ban, kick)
+
+	/abankick <player>
+
 
 ## Parameter
 - FILE_NAME = the name of file that contains list of banned player.
