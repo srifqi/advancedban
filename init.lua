@@ -6,7 +6,7 @@ local FILE_NAME = "bannedplayerlist.txt"
 local BAN_MESSAGE = "Your username is banned."
 
 function advancedban.ban(name)
-	local list = io.open(minetest.get_worldpath()..DIR_DELIM..FILE_NAME, "w")
+	local list = io.open(minetest.get_worldpath()..DIR_DELIM..FILE_NAME, "a")
 	list:write(name.."\n")
 	list:close()
 	minetest.log("action", name.." has been added to advancedban list.") -- print debug
