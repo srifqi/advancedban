@@ -5,16 +5,37 @@ advancedban = {}
 local FILE_NAME = "bannedplayerlist.txt"
 local BAN_MESSAGE = "Your username is banned."
 
-function advancedban.ban(name)
-	local list = io.open(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME, "a")
-	list:write(name .. "\n")
+function advancedban.is_banned(name)
+	if not file_exists(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME) then
+		return false
+	end
+	local list = io.open(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME, "r")
+	for username in list:lines() do
+		if name == username then
+			list:close()
+			return true
+		end
+	end
 	list:close()
-	minetest.log("action", name .. " has been added to advancedban list.") -- print debug
+	return false
+end
+
+function advancedban.ban(name)
+	if advancedban.is_banned(name) then
+		-- minetest.log("info", name .. " is already in advancedban list.") -- print debug
+		return false
+	else
+		local list = io.open(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME, "a")
+		list:write(name .. "\n")
+		list:close()
+		minetest.log("action", name .. " has been added to advancedban list.") -- print debug
+		return true
+	end
 end
 
 function advancedban.unban(name)
 	local found = false
-	if file_exists(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME) == true then
+	if file_exists(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME) then
 		local list = io.open(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME, "r")
 		local text = ""
 		for username in list:lines() do
@@ -29,7 +50,7 @@ function advancedban.unban(name)
 		list:write(text)
 		list:close()
 	end
-	if found == true then
+	if found then
 		minetest.log("action", name .. " has been removed from advancedban list.") -- print debug
 	end
 	return found
@@ -37,87 +58,87 @@ end
 
 minetest.register_chatcommand("aban", {
 	params = "<player name>",
-	description = "Ban name of player",
+	description = "Ban a player with given name",
 	privs = {ban = true},
 	func = function(name, param)
-		advancedban.ban(param)
-		minetest.chat_send_player(name, param .. " has been added to advancedban list.")
+		if advancedban.ban(param) then
+			minetest.chat_send_player(name, param .. " has been added to advancedban list.")
+		else
+			minetest.chat_send_player(name, param .. " is already in advancedban list.")
+		end
 	end
 })
 
 minetest.register_chatcommand("abankick", {
 	params = "<player name>",
-	description = "Ban and kick name of player",
+	description = "Ban and kick a player with given name",
 	privs = {ban = true, kick = true},
 	func = function(name, param)
-		advancedban.ban(param)
-		text = "and kicked"
-		if not minetest.kick_player(param) then
-			text = "but failed to kick player"
+		local kick = ", but failed to kick the player."
+		if minetest.kick_player(param) then
+			kick = " and has been kicked."
 		end
-		minetest.chat_send_player(name, param .. " has been added to advancedban list " .. text .. ".")
+		if advancedban.ban(param) then
+			minetest.chat_send_player(name, param .. " has been added to advancedban list" .. kick)
+		else
+			minetest.chat_send_player(name, param .. " is already in advancedban list" .. kick)
+		end
 	end
 })
 
 minetest.register_chatcommand("aban+", {
 	params = "<player name>",
-	description = "Ban name and IP of player",
+	description = "Ban a player and its IP with given name",
 	privs = {ban = true},
 	func = function(name, param)
-		advancedban.ban(param)
-		text = " and successfully ban IP of player"
-		if not minetest.ban_player(param) then
-			text = " but failed to ban IP of player"
+		local IP = ", but failed to ban IP of the player."
+		if minetest.ban_player(param) then
+			IP = " and IP of the player is banned."
 		end
-		minetest.chat_send_player(name, param .. " has been added to advancedban list" .. text .. ".")
+		if advancedban.ban(param) then
+			minetest.chat_send_player(name, param .. " has been added to advancedban list" .. IP)
+		else
+			minetest.chat_send_player(name, param .. " is already in advancedban list" .. IP)
+		end
 	end
 })
 
 minetest.register_chatcommand("unaban", {
 	params = "<player name>",
-	description = "Remove name of player ban",
+	description = "Remove player ban with given name",
 	privs = {ban = true},
 	func = function(name, param)
-		local removed = advancedban.unban(param)
-		if removed == true then
+		if advancedban.unban(param) then
 			minetest.chat_send_player(name, param .. " has been removed from advancedban list.")
 		else
 			minetest.chat_send_player(name, param .. " is not found in advancedban list.")
 		end
-	end,
+	end
 })
 
 minetest.register_chatcommand("unaban+", {
 	params = "<player name>",
-	description = "Remove name and IP of player ban",
+	description = "Remove player ban and its IP with given name",
 	privs = {ban = true},
 	func = function(name, param)
-		local removed = advancedban.unban(param)
-		local unbanned = minetest.unban_player_or_ip(param)
-		local text = " and IP of player unbanned"
-		if not unbanned then
-			text = " but failed to unban IP of player"
+		local IP = ", but failed to unban IP of the player"
+		if minetest.unban_player_or_ip(param) then
+			IP = " and IP of the player is unbanned."
 		end
-		if removed == true then
-			minetest.chat_send_player(name, param .. " has been removed from advancedban list" .. text .. ".")
+		if advancedban.unban(param) then
+			minetest.chat_send_player(name, param .. " has been removed from advancedban list" .. IP)
 		else
-			minetest.chat_send_player(name, param .. " is not found in advancedban list" .. text .. ".")
+			minetest.chat_send_player(name, param .. " is not found in advancedban list" .. IP)
 		end
 	end
 })
 
 -- prevent advancedbanned player to join
 minetest.register_on_prejoinplayer(function(name)
-	if file_exists(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME) == true then
-		local list = io.open(minetest.get_worldpath() .. DIR_DELIM .. FILE_NAME, "r")
-		for username in list:lines() do
-			if name == username then
-				return BAN_MESSAGE
-			end
-		end
-		list:close()
+	if advancedban.is_banned(name) then
+		return BAN_MESSAGE
 	end
 end)
 
 -- Minetest library - misc_helpers.lua
-function file_exists(filename)local f=io.open(filename, "r");if f==nil then return false else f:close() return true	end end
+function file_exists(filename)local f=io.open(filename,"r");if f==nil then return false else f:close() return true end end
