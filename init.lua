@@ -56,6 +56,19 @@ function advancedban.unban(name)
 	return found
 end
 
+minetest.register_chatcommand("abancheck", {
+	params = "<player name>",
+	description = "Check ban for a player with given name",
+	privs = {},
+	func = function(name, param)
+		if advancedban.is_banned(param) then
+			minetest.chat_send_player(name, param .. " is in advancedban list.")
+		else
+			minetest.chat_send_player(name, param .. " is not in advancedban list.")
+		end
+	end
+})
+
 minetest.register_chatcommand("aban", {
 	params = "<player name>",
 	description = "Ban a player with given name",
