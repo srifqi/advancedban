@@ -1,37 +1,45 @@
-advancedban
+Advanced Ban [advancedban]
 ===========
-This mod will ban ONLY username, not the ip address.
+
+This mod will ban player based on its username, not its IP address.
+
+# License
+MIT License (see LICENSE file)
 
 # Usage
-
-	advancedban.ban(player_name)
-	advancedban.unban(player_name)
-
-or using chat commands:
-(require privileges: ban)
-
-	/aban <player name>
-	/unaban <player name>
-
-This will adds/removes player to/from advancedban list.
-This does NOT kick the player!
-
-Use this to add to list AND kick the player.
-(require privileges: ban, kick)
-
-	/abankick <player name>
-
-### Shortcut to ban/unban the IP
-
-	TL;DR just add "+" after command (except /abankick)
-
-(require privileges: ban)
-
-	/aban+ <player name>
-	/unban+ <player name>
-
-This will adds/removes player to/from advancedban list AND ban/unban it's IP.
-
 ## Parameter
-- FILE_NAME = the name of file that contains list of banned player.
-- BAN_MESSAGE = the message that will be sent to the banned player each time the player log-in.
+- FILE_NAME: name of the file that contains list of banned player
+- BAN_MESSAGE: a message that will be sent to the banned player each time it connects
+
+## Chat commands
+### Check ban for a player
+
+/abancheck <player name>
+
+### Simple ban/unban
+(requires "ban" privilege)
+
+/aban <player name>
+/unaban <player name>
+
+### Ban with kick
+(requires "ban" and "kick" privileges)
+
+/abankick <player name>
+
+### Ban/unban with its IP
+(requires "ban" privilege)
+
+/aban+ <player name>
+/unban+ <player name>
+
+## API
+
+advancedban.is_banned(player_name)
+-- true if the player is banned, false if not
+
+advancedban.ban(player_name)
+-- true if OK, false if the player has been banned before
+
+advancedban.unban(player_name)
+-- true if OK, false if the player hasn't been banned before
